@@ -9,7 +9,7 @@ var usersRouter = require('./routes/users');
 var cors = require('cors')
 var app = express()
 
-app.use(cors({origin: 'http://localhost'}))
+app.use(cors({ origin: 'http://localhost' }))
 
 app.use(logger('dev'));
 app.use(express.json());
