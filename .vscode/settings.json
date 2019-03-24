@@ -1,0 +1,13 @@
+{
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"editor.tabSize": 3,
+	"vetur.format.options.tabSize": 3,
+	"vetur.format.options.useTabs": true,
+	"vetur.format.defaultFormatterOptions": {
+		"prettier": {
+		  "printWidth": 100,
+		  "semi": false
+		}
+	 }
+}
