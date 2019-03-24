@@ -16,6 +16,18 @@ router.post('/', async function (req, res, next) {
    }
 });
 
+router.post('/buy', async function (req, res, next) {
+   try {
+      let result = await crud.buy(req.body);
+      res.send({ message: 'Diaper bought', status: 'success', result: result })
+   } catch (error) {
+      if (!handleException(error, res)) {
+         res.status(500);
+         res.send({ message: 'Error buying the diaper', status: 'error' })
+      }
+   }
+});
+
 router.get('/:model', async function (req, res, next) {
    try {
       let result = await crud.find(req.params.model);
@@ -49,7 +61,7 @@ router.put('/', async function (req, res, next) {
 
 router.get('/', async function (req, res, next) {
    try {
-      res.send(await crud.listAll())
+      res.send(await crud.listVisible())
    } catch (error) {
       if (!handleException(error, res)) {
          res.status(500);
@@ -59,9 +71,9 @@ router.get('/', async function (req, res, next) {
 });
 
 //Hide
-router.delete('/', async function (req, res, next) {
+router.delete('/:model', async function (req, res, next) {
    try {
-      await crud.delete(req.query.model);
+      await crud.delete(req.params.model);
       res.send({ message: 'Diaper deleted succesfully', status: 'success' });
    } catch (error) {
       if (!handleException(error, res)) {

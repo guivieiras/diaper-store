@@ -24,9 +24,8 @@ cls.update = async function (obj) {
       if (obj.model == null) {
          throw new Error('Document does not have any type of identification');
       }
-      console.log(await cls.find(obj.model))
-      let original = await cls.find(obj.model);
-
+		
+		let original = await cls.find(obj.model);
       if (original == null) {
          throw new Error('Document does not exist to be updated');
       }
@@ -39,11 +38,16 @@ cls.update = async function (obj) {
 
 cls.listAll = async function () {
    var list = await alice.list({ include_docs: true })
-   return list.rows.map(o => o.doc);
+	return list.rows.map(o => o.doc);
+}
+
+cls.listVisible = async function () {
+   var list = await alice.list({ include_docs: true })
+	return list.rows.map(o => o.doc).filter(o=> !o.hidden);
 }
 
 cls.find = async function (model) {
-   var list = await cls.listAll();
+   var list = await cls.listVisible();
    return list.find(o => o.model == model);
 }
 
@@ -68,6 +72,14 @@ cls.delete = async function (model) {
    item.hidden = true;
 
    return await cls.update(item);
+}
+
+cls.buy = async function(obj){
+	let document = await cls.find(obj.model)
+	let size = document.sizes.find(o=> o.size == obj.size)
+	size.quantity -= obj.quantity;
+	size.sold += obj.quantity;
+	return await cls.update(document)
 }
 
 module.exports = cls
