@@ -4,7 +4,8 @@
 			<v-toolbar-title>Diapers list</v-toolbar-title>
 			<v-spacer></v-spacer>
 			<v-btn @click.stop="dialog = true" color="primary" dark class="mb-2">New diaper</v-btn>
-			<v-btn @click.stop="buyDialog = true" color="primary" dark class="mb-2">Buy</v-btn>
+			<v-btn @click.stop="buyDialog = true" column color="primary" dark class="mb-2">Buy</v-btn>
+			<v-switch hide-details v-model="localValidation" label="Local Validation" class="mb-2 shrink"></v-switch>
 		</v-toolbar>
 		<v-data-table
 			:headers="headers"
@@ -29,6 +30,7 @@
 					:hide-actions="true"
 					:items="props.item.sizes"
 					item-key="size"
+					class="overflow-hidden"
 				>
 					<template v-slot:items="props">
 						<tr>
@@ -48,43 +50,40 @@
 				</v-card-title>
 
 				<v-card-text>
-					<v-container grid-list-md>
-						<v-layout wrap>
-							<v-flex xs12>
-								<v-text-field v-model="editedItem.model" label="Model"></v-text-field>
-							</v-flex>
-							<v-flex xs12>
-								<v-textarea auto-grow rows="1" v-model="editedItem.description" label="Description"></v-textarea>
-							</v-flex>
-							<v-flex xs12>
-								<v-layout row>
-									<v-text-field v-model="tempSize" label="Size"></v-text-field>
-									<v-text-field class="mx-3" v-model="tempQuantity" mask="####" label="Quantity"></v-text-field>
-									<v-btn color="blue darken-1" flat @click="createSize">Add</v-btn>
-								</v-layout>
-							</v-flex>
-							<v-flex xs12></v-flex>
-							<v-flex xs12>
-								<v-data-table
-									:headers="sizesHeadersEditing"
-									:items="editedItem.sizes"
-									item-key="size"
-									:hide-actions="true"
-								>
-									<template v-slot:items="props">
-										<tr>
-											<td class="text-xs-left">{{ props.item.size }}</td>
-											<td class="text-xs-center">{{ props.item.quantity }}</td>
-											<td class="justify-center layout px-0">
-												<v-icon small class="mr-2" @click="removeSize(props.item)">remove</v-icon>
-												<v-icon small class="mr-2" @click="addSize(props.item)">add</v-icon>
-												<v-icon small @click="deleteSize(props.item)">delete</v-icon>
-											</td>
-										</tr>
-									</template>
-								</v-data-table>
-							</v-flex>
-						</v-layout>
+					<v-container>
+						<v-form ref="diaperForm">
+							<v-text-field :rules="[v => !!v || 'Insert model']" v-model="editedItem.model" label="Model"></v-text-field>
+							<v-textarea
+								:rules="[v => !!v || 'Insert description']"
+								auto-grow
+								rows="1"
+								v-model="editedItem.description"
+								label="Description"
+							></v-textarea>
+							<v-layout row>
+								<v-text-field v-model="tempSize" label="Size"></v-text-field>
+								<v-text-field class="mx-3" v-model="tempQuantity" mask="####" label="Quantity"></v-text-field>
+								<v-btn color="blue darken-1" flat @click="createSize">Add</v-btn>
+							</v-layout>
+							<v-data-table
+								:headers="sizesHeadersEditing"
+								:items="editedItem.sizes"
+								item-key="size"
+								:hide-actions="true"
+							>
+								<template v-slot:items="props">
+									<tr>
+										<td class="text-xs-left">{{ props.item.size }}</td>
+										<td class="text-xs-center">{{ props.item.quantity }}</td>
+										<td class="justify-center layout px-0">
+											<v-icon small class="mr-2" @click="removeSize(props.item)">remove</v-icon>
+											<v-icon small class="mr-2" @click="addSize(props.item)">add</v-icon>
+											<v-icon small @click="deleteSize(props.item)">delete</v-icon>
+										</td>
+									</tr>
+								</template>
+							</v-data-table>
+						</v-form>
 					</v-container>
 				</v-card-text>
 
@@ -104,26 +103,31 @@
 
 				<v-card-text>
 					<v-container grid-list-md>
-						<v-layout wrap>
-							<v-flex xs12>
-								<v-autocomplete v-model="buy.model" item-text="model" :items="diapers" label="Model"></v-autocomplete>
-								<v-select
-									item-text="size"
-									v-model="buy.size"
-									:disabled="!buy.model"
-									:items="buyItems()"
-									label="Size"
-								/>
+						<v-form ref="buyForm">
+							<v-autocomplete
+								v-model="buy.model"
+								:rules="[v => !!v || 'Select a model']"
+								item-text="model"
+								:items="diapers"
+								label="Model"
+							></v-autocomplete>
+							<v-select
+								item-text="size"
+								v-model="buy.size"
+								:rules="[v => !!v || 'Select a size']"
+								:disabled="!buy.model"
+								:items="buyItems()"
+								label="Size"
+							/>
 
-								<v-text-field
-									v-model="buy.quantity"
-									:disabled="!buy.size"
-									:rules="[ v => !!v || 'teste', v => v <= maxBuyQuantity() || 'oie']"
-									:suffix="'/' + maxBuyQuantity()"
-									label="Quantity"
-								></v-text-field>
-							</v-flex>
-						</v-layout>
+							<v-text-field
+								v-model="buy.quantity"
+								:disabled="!buy.size"
+								:rules="[ v => !!v || 'Insert a valid value ', v => v <= maxBuyQuantity() || 'Quantity exceeds store count']"
+								:suffix="'/' + maxBuyQuantity()"
+								label="Quantity"
+							></v-text-field>
+						</v-form>
 					</v-container>
 				</v-card-text>
 
@@ -144,6 +148,8 @@ import { mapState, mapActions } from "vuex"
 export default {
 	name: "List",
 	data: () => ({
+		localValidation: true,
+		apiUrl: process.env.VUE_APP_API_URL,
 		dialog: false,
 		loading: true,
 		buyDialog: false,
@@ -190,6 +196,7 @@ export default {
 
 	created() {
 		this.initialize()
+		console.log(process.env)
 	},
 
 	methods: {
@@ -217,31 +224,32 @@ export default {
 			}
 		},
 		async buyDiaper() {
-			if (this.buy.model && this.buy.size && this.buy.quantity) {
-				try{
-					this.buy.quantity = parseInt(this.buy.quantity);
-					
-					this.buyLoading = true;
-					let response = await axios.post('http://localhost:3000/users/buy', this.buy);
+			if ((this.$refs.buyForm.validate() && this.localValidation) || !this.localValidation) {
+				try {
+					this.buy.quantity = parseInt(this.buy.quantity)
+
+					this.buyLoading = true
+					let response = await axios.post(`${this.apiUrl}/diapers/buy`, this.buy)
 					this.logResponse(response)
 					let diaper = this.diapers.find(o => o.model == this.buy.model)
 					let size = diaper.sizes.find(o => o.size == this.buy.size)
-					size.quantity -= this.buy.quantity;
-					size.sold += this.buy.quantity;
+					size.quantity -= this.buy.quantity
+					size.sold += this.buy.quantity
 
-					diaper._id = response.data.result.id;
-					diaper._rev = response.data.result.rev;
+					diaper._id = response.data.result.id
+					diaper._rev = response.data.result.rev
 					this.closeBuy()
-				}catch(error){
+				} catch (error) {
+					console.log(error)
 					this.logResponse(error.response)
 				}
-				this.buyLoading = false;
+				this.buyLoading = false
 			}
 		},
 		async closeBuy() {
 			this.buyDialog = false
 			setTimeout(() => {
-				this.buy = {}
+				// this.buy = {}
 			}, 300)
 		},
 		models() {
@@ -273,15 +281,12 @@ export default {
 
 		async deleteItem(item) {
 			const index = this.diapers.indexOf(item)
-			if (confirm("Are you sure you want to delete this item?")){
-				try{
-					let result = await axios.delete("http://localhost:3000/users/" + item.model)
+			if (confirm("Are you sure you want to delete this item?")) {
+				try {
+					let result = await axios.delete(`${this.apiUrl}/diapers/${item.model}`)
 					this.diapers.splice(index, 1)
-				}catch(error){
-					
-				}
-				
-			}  
+				} catch (error) {}
+			}
 		},
 
 		async close() {
@@ -293,31 +298,33 @@ export default {
 		},
 
 		async save() {
-			try {
-				this.createLoading = true
-				if (this.editedIndex > -1) {
-					let response = await axios.put("http://localhost:3000/users", this.editedItem)
-					this.logResponse(response);
-					this.editedItem._id = response.data.result.id
-					this.editedItem._rev = response.data.result.rev
-					Object.assign(this.diapers[this.editedIndex], this.editedItem)
-				} else {
-					let response = await axios.post("http://localhost:3000/users", this.editedItem)
-					this.logResponse(response);
-					this.editedItem._id = response.data.result.id
-					this.editedItem._rev = response.data.result.rev
-					this.diapers.push(this.editedItem)
+			if ((this.$refs.diaperForm.validate() && this.localValidation) || !this.localValidation) {
+				try {
+					this.createLoading = true
+					if (this.editedIndex > -1) {
+						let response = await axios.put(`${this.apiUrl}/diapers`, this.editedItem)
+						this.logResponse(response)
+						this.editedItem._id = response.data.result.id
+						this.editedItem._rev = response.data.result.rev
+						Object.assign(this.diapers[this.editedIndex], this.editedItem)
+					} else {
+						let response = await axios.post(`${this.apiUrl}/diapers`, this.editedItem)
+						this.logResponse(response)
+						this.editedItem._id = response.data.result.id
+						this.editedItem._rev = response.data.result.rev
+						this.diapers.push(this.editedItem)
+					}
+					this.close()
+				} catch (error) {
+					this.logResponse(error.response)
 				}
-				this.close()
-			} catch (error) {
-				this.logResponse(error.response);
+				this.createLoading = false
 			}
-			this.createLoading = false
 		},
 		...mapActions(["showLoading", "hideLoading", "logResponse"]),
 		async initialize() {
 			this.loading = true
-			let ab = await axios.get("http://localhost:3000/users")
+			let ab = await axios.get(`${this.apiUrl}/diapers`)
 			this.diapers = ab.data
 
 			let a = [
@@ -379,9 +386,9 @@ export default {
 
 			if (!ab.data || (ab.data && ab.data.length == 0)) {
 				for (let batata of a) {
-					await axios.post("http://localhost:3000/users", batata)
+					await axios.post(`${this.apiUrl}/diapers`, batata)
 				}
-				let ab = await axios.get("http://localhost:3000/users")
+				let ab = await axios.get(`${this.apiUrl}/diapers`)
 				this.diapers = ab.data
 			}
 			this.loading = false
