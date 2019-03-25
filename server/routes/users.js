@@ -88,6 +88,10 @@ router.get('/test/deleteAll', async function (req, res, next) {
    res.send(await crud.deleteAll())
 });
 
+router.get('/test/deleteBuys', async function (req, res, next) {
+   res.send(await crud.deleteBuys())
+});
+
 function handleException(error, res) {
    console.log(error)
 

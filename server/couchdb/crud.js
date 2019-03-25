@@ -1,85 +1,119 @@
 const nano = require('nano')('https://couchdb-fa9597.smileupps.com');
 const alice = nano.db.use('teste');
-var { DuplicatedException, NotFoundException } = require('../utils/exceptions')
+const bought = nano.db.use('bought');
+var { DuplicatedException, NotFoundException, BadRequestException } = require('../utils/exceptions')
 
 var cls = {};
+
 cls.insert = async function (obj) {
-   delete obj._id;
-   delete obj._rev;
-   if (obj.model == null){
-      throw new Error('Document does not have the \'model\' attribute');
-   }
-   if (await cls.find(obj.model)){
-      throw new DuplicatedException(`Document with model '${obj.model}' already exists, this is a unique field`);
-   }
-   return await alice.insert(obj);
+	delete obj._id;
+	delete obj._rev;
+	cls.validate(obj);
+	if (await cls.find(obj.model)) {
+		throw new DuplicatedException(`Document with model '${obj.model}' already exists, this is a unique field`);
+	}
+	return await alice.insert(obj);
+}
+
+cls.validate = function (obj) {
+	if (!obj.model) {
+		throw new BadRequestException('Document does not have the \'model\' attribute');
+	}
+	if (!obj.description) {
+		throw new BadRequestException('Document does not have the \'description\' attribute');
+	}
+	if (obj.sizes) {
+		for (var size of obj.sizes) {
+			if (!size.size){
+				throw new BadRequestException('Size name cannot be empty');
+			}
+			if (obj.sizes.filter(o=> o.size == size.size).length > 1){
+				throw new BadRequestException('Size name must be unique');
+			}
+			if (size.quantity == null || size.quantity < 0){
+				throw new BadRequestException('Document has sizes that have negative quantity');
+			}
+		}
+	}
 }
 
 cls.findById = async function (id) {
-   return await alice.get(id);
+	return await alice.get(id);
 }
 
 cls.update = async function (obj) {
-   if (obj._id == null || obj._rev == null) {
-      if (obj.model == null) {
-         throw new Error('Document does not have any type of identification');
-      }
-		
-		let original = await cls.find(obj.model);
-      if (original == null) {
-         throw new Error('Document does not exist to be updated');
-      }
-
-      obj._id = original._id;
-      obj._rev = original._rev;
-   }
-   return await alice.insert(obj);
+	if (obj._id == null || obj._rev == null) {
+		throw new Error('Document does not have id or rev');
+	}
+	cls.validate(obj);
+	return await alice.insert(obj);
 }
 
 cls.listAll = async function () {
-   var list = await alice.list({ include_docs: true })
+	var list = await alice.list({ include_docs: true })
 	return list.rows.map(o => o.doc);
 }
 
 cls.listVisible = async function () {
-   var list = await alice.list({ include_docs: true })
-	return list.rows.map(o => o.doc).filter(o=> !o.hidden);
+	var list = await alice.list({ include_docs: true })
+	return list.rows.map(o => o.doc).filter(o => !o.hidden);
 }
 
 cls.find = async function (model) {
-   var list = await cls.listVisible();
-   return list.find(o => o.model == model);
+	var list = await cls.listVisible();
+	return list.find(o => o.model == model);
 }
 
 cls.deleteAll = async function () {
-   var list = await cls.listAll();
+	var list = await cls.listAll();
 
-   for (doc of list) {
-      await cls.deleteDoc(doc);
-   }
+	for (doc of list) {
+		await cls.deleteDoc(doc);
+	}
 }
 
-cls.deleteDoc = async function (doc) {  
-   return await alice.destroy(doc._id, doc._rev);
+cls.deleteDoc = async function (doc) {
+	return await alice.destroy(doc._id, doc._rev);
 }
 
 cls.delete = async function (model) {
-   var item = await cls.find(model);
-   
-   if (!item || item.hidden)
-      throw new NotFoundException('Diaper not found')
+	var item = await cls.find(model);
 
-   item.hidden = true;
+	if (!item || item.hidden)
+		throw new NotFoundException('Diaper not found')
 
-   return await cls.update(item);
+	item.hidden = true;
+
+	return await cls.update(item);
 }
 
-cls.buy = async function(obj){
+cls.buy = async function (obj) {
 	let document = await cls.find(obj.model)
-	let size = document.sizes.find(o=> o.size == obj.size)
+	let size = document.sizes.find(o => o.size == obj.size)
+	if (obj.quantity < 0){
+		throw new BadRequestException("Quantity can't be negative")
+	}
+	if (size.quantity - obj.quantity < 0){
+		throw new BadRequestException("Sold out")
+	}
 	size.quantity -= obj.quantity;
 	size.sold += obj.quantity;
-	return await cls.update(document)
+	let result = await cls.update(document)
+	bought.insert({diaper: result.id, size: obj.size, timestamp: new Date().getTime(), quantity: obj.quantity})
+	return result;
+}
+
+cls.deleteBuys = async function () {
+	var list = await bought.list({ include_docs: true })
+
+	for (doc of list.rows.map(o => o.doc)) {
+		bought.destroy(doc._id, doc._rev);
+	}
+}
+
+cls.buyDatagram = async function (){
+	var list = await bought.list({ include_docs: true })
+	return list.rows.map(o => o.doc);
 }
 
 module.exports = cls

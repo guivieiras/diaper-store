@@ -21,10 +21,16 @@ class DuplicatedException extends CustomException {
 	}
 }
 
+class BadRequestException extends CustomException {
+	constructor(message) {
+		super({message: message, code: 400, status: 'warn'});
+	}
+}
+
 class NotFoundException extends CustomException {
 	constructor(message, internalMessage) {
 		super({message: message, internalMessage: internalMessage, code: 404, status: 'warn'});
 	}
 }
 
-module.exports = { DuplicatedException, CustomException, NotFoundException };
+module.exports = { DuplicatedException, CustomException, NotFoundException, BadRequestException };
