@@ -23,32 +23,52 @@ router.get('/', async function (req, res, next) {
 				//a cada tamanho em cada fralda
 				for (var tamanho in grusp)
 				{
-					//quantidade de compras do tamanho especifico da fralda					
+					//quantidade de compras do tamanho especifico da fralda			
+					var agora = new Date();
+					var umDiaAtras = new Date();
+					umDiaAtras.setHours(agora.getHours() - 48);
+					umDiaAtras = new Date(1553548124735);
+
+					var uteis = grusp[tamanho].filter(x=> new Date(x.timestamp) > umDiaAtras)		
 					var compras = grusp[tamanho].reduce((a,b) => a + b.quantity, 0);
-					console.log(`Compras: ${compras}`)				
+					console.log({compras, grup: grusp[tamanho], filtered: uteis })				
 
 					
-					var seconds = Math.abs(new Date().getTime() - (new Date().getTime() - 2000000) ) / 1000 / 60;
+					var microSecondsDiff = Math.abs(agora.getTime() - umDiaAtras.getTime());
+					var seconds =  microSecondsDiff / (1000);
+					var minutes =  microSecondsDiff / (1000 * 60);
+					var hours =  microSecondsDiff / (1000 * 60 * 60);
+					var days =  microSecondsDiff / (1000 * 60 * 60 * 24);
 
 					var size = diaper.sizes.find(o=> o.size == tamanho);
 					var quantidadeTotal = size.quantity;
 
-					console.log({quantidadeTotal, compras, seconds})
-					console.log(compras/seconds)
 
-					var agora = new Date()
-					var y = (quantidadeTotal/(compras/seconds)); //quantidade de minutos para esgotar
-					console.log (y);
-
-					var myTimeSpan = y*60*1000; // 5 minutes in milliseconds
+					var x = {
+						quantidadeTotal, 
+						compras, 
+						seconds, 
+						minutes, 
+						hours, 
+						days,
+						'compras/seconds': compras/seconds,
+						'compras/minutes': compras/minutes,
+						'compras/hours': compras/hours,
+						'compras/days': compras/days,
+						'quantidadeTotal/(compras/minutes)': quantidadeTotal/(compras/minutes),
+						'quantidadeTotal/(compras/seconds)': quantidadeTotal/(compras/seconds),
+						'quantidadeTotal/(compras/hours)': quantidadeTotal/(compras/hours)
+					}
+					var myTimeSpan = x['quantidadeTotal/(compras/minutes)'] * 60 * 1000; // 5 minutes in milliseconds
 					agora.setTime(agora.getTime() + myTimeSpan);
-					
-					
 
+					var oie = new Date();
+					var s = x['quantidadeTotal/(compras/seconds)'] * 1000;
+					oie.setTime(oie.getTime() + s);
 
-					
-
-					console.log(agora)
+					x.quandoVaiAcabar = agora;
+					x.quandoVaiAcabarIgual = oie;
+					console.log(x);
 					console.log('\n')
 				}
 				continue;
@@ -97,3 +117,4 @@ function handleException(error, res) {
 }
 
 module.exports = router;
+
