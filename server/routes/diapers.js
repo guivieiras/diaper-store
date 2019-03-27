@@ -1,12 +1,12 @@
 var express = require('express');
 var router = express.Router();
-var crud = require('../couchdb/crud');
+var diapers = require('../db/diapers');
 var { DuplicatedException, CustomException } = require('../utils/exceptions')
 
 
 router.post('/', async function (req, res, next) {
    try {
-      let result = await crud.insert(req.body);
+      let result = await diapers.insert(req.body);
       res.send({ message: 'Diaper added', status: 'success', result: result })
    } catch (error) {
       if (!handleException(error, res)) {
@@ -18,7 +18,7 @@ router.post('/', async function (req, res, next) {
 
 router.post('/buy', async function (req, res, next) {
    try {
-      let result = await crud.buy(req.body);
+      let result = await diapers.buy(req.body);
       res.send({ message: 'Diaper bought', status: 'success', result: result })
    } catch (error) {
       if (!handleException(error, res)) {
@@ -30,7 +30,7 @@ router.post('/buy', async function (req, res, next) {
 
 router.get('/:model', async function (req, res, next) {
    try {
-      let result = await crud.find(req.params.model);
+      let result = await diapers.find(req.params.model);
       if (result) {
          res.send(result)
       } else {
@@ -49,7 +49,7 @@ router.get('/:model', async function (req, res, next) {
 router.put('/', async function (req, res, next) {
    try {
       let obj = req.body;
-      let result = await crud.update(obj);
+      let result = await diapers.update(obj);
       res.send({ message: 'Diaper updated', status: 'success', result: result })
    } catch (error) {
       if (!handleException(error, res)) {
@@ -61,7 +61,7 @@ router.put('/', async function (req, res, next) {
 
 router.get('/', async function (req, res, next) {
    try {
-      res.send(await crud.listVisible())
+      res.send(await diapers.listVisible())
    } catch (error) {
       if (!handleException(error, res)) {
          res.status(500);
@@ -73,7 +73,7 @@ router.get('/', async function (req, res, next) {
 //Hide
 router.delete('/:model', async function (req, res, next) {
    try {
-      await crud.delete(req.params.model);
+      await diapers.delete(req.params.model);
       res.send({ message: 'Diaper deleted succesfully', status: 'success' });
    } catch (error) {
       if (!handleException(error, res)) {
@@ -85,11 +85,11 @@ router.delete('/:model', async function (req, res, next) {
 
 
 router.get('/test/deleteAll', async function (req, res, next) {
-   res.send(await crud.deleteAll())
+   res.send(await diapers.deleteAll())
 });
 
 router.get('/test/deleteBuys', async function (req, res, next) {
-   res.send(await crud.deleteBuys())
+   res.send(await diapers.deleteBuys())
 });
 
 function handleException(error, res) {

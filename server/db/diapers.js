@@ -1,6 +1,6 @@
 const nano = require('nano')('https://couchdb-fa9597.smileupps.com');
-const alice = nano.db.use('teste');
-const bought = nano.db.use('bought');
+const Diapers = nano.db.use('diapers');
+const Sales = nano.db.use('sales');
 var { DuplicatedException, NotFoundException, BadRequestException } = require('../utils/exceptions')
 
 var cls = {};
@@ -12,7 +12,7 @@ cls.insert = async function (obj) {
 	if (await cls.find(obj.model)) {
 		throw new DuplicatedException(`Document with model '${obj.model}' already exists, this is a unique field`);
 	}
-	return await alice.insert(obj);
+	return await Diapers.insert(obj);
 }
 
 cls.validate = function (obj) {
@@ -38,7 +38,7 @@ cls.validate = function (obj) {
 }
 
 cls.findById = async function (id) {
-	return await alice.get(id);
+	return await Diapers.get(id);
 }
 
 cls.update = async function (obj) {
@@ -46,16 +46,16 @@ cls.update = async function (obj) {
 		throw new Error('Document does not have id or rev');
 	}
 	cls.validate(obj);
-	return await alice.insert(obj);
+	return await Diapers.insert(obj);
 }
 
 cls.listAll = async function () {
-	var list = await alice.list({ include_docs: true })
+	var list = await Diapers.list({ include_docs: true })
 	return list.rows.map(o => o.doc);
 }
 
 cls.listVisible = async function () {
-	var list = await alice.list({ include_docs: true })
+	var list = await Diapers.list({ include_docs: true })
 	return list.rows.map(o => o.doc).filter(o => !o.hidden);
 }
 
@@ -73,7 +73,7 @@ cls.deleteAll = async function () {
 }
 
 cls.deleteDoc = async function (doc) {
-	return await alice.destroy(doc._id, doc._rev);
+	return await Diapers.destroy(doc._id, doc._rev);
 }
 
 cls.delete = async function (model) {
@@ -99,21 +99,17 @@ cls.buy = async function (obj) {
 	size.quantity -= obj.quantity;
 	size.sold += obj.quantity;
 	let result = await cls.update(document)
-	bought.insert({diaper: result.id, size: obj.size, timestamp: new Date().getTime(), quantity: obj.quantity})
+	Sales.insert({diaper: result.id, size: obj.size, timestamp: new Date().getTime(), quantity: obj.quantity})
 	return result;
 }
 
 cls.deleteBuys = async function () {
-	var list = await bought.list({ include_docs: true })
+	var list = await Sales.list({ include_docs: true })
 
 	for (doc of list.rows.map(o => o.doc)) {
-		bought.destroy(doc._id, doc._rev);
+		Sales.destroy(doc._id, doc._rev);
 	}
 }
 
-cls.buyDatagram = async function (){
-	var list = await bought.list({ include_docs: true })
-	return list.rows.map(o => o.doc);
-}
 
 module.exports = cls
