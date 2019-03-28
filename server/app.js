@@ -3,8 +3,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var diapersRouter = require('./routes/diapers');
-var dataRouter = require('./routes/sales');
+var diapersController = require('./controllers/diapersController');
 
 var cors = require('cors')
 var app = express()
@@ -17,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/diapers', diapersRouter);
-app.use('/data', dataRouter);
+app.use('/diapers', diapersController);
+
 
 module.exports = app;

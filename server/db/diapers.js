@@ -1,4 +1,4 @@
-const nano = require('nano')('https://couchdb-fa9597.smileupps.com');
+const nano = require('nano')(process.env.DB_URL);
 const Diapers = nano.db.use('diapers');
 const Sales = nano.db.use('sales');
 var { DuplicatedException, NotFoundException, BadRequestException } = require('../utils/exceptions')
@@ -99,7 +99,8 @@ cls.buy = async function (obj) {
 	size.quantity -= obj.quantity;
 	size.sold += obj.quantity;
 	let result = await cls.update(document)
-	Sales.insert({diaper: result.id, size: obj.size, timestamp: new Date().getTime(), quantity: obj.quantity})
+	
+	await Sales.insert({diaper: result.id, size: obj.size, timestamp: new Date().getTime(), quantity: obj.quantity})
 	return result;
 }
 
