@@ -4,7 +4,7 @@ var Diapers = require('../db/diapers');
 var Sales = require('../db/sales');
 var { DuplicatedException, CustomException } = require('../utils/exceptions')
 
-
+//Create new diaper
 router.post('/', async function (req, res, next) {
    try {
       let result = await Diapers.insert(req.body);
@@ -17,21 +17,7 @@ router.post('/', async function (req, res, next) {
    }
 });
 
-router.post('/buy', async function (req, res, next) {
-   try {
-		let result = await Diapers.buy(req.body);
-		let predictions = await Sales.predictions();
-		predictions = predictions[result.id][req.body.size];
-
-      res.send({ message: 'Diaper bought', status: 'success', result, predictions })
-   } catch (error) {
-      if (!handleException(error, res)) {
-         res.status(500);
-         res.send({ message: 'Error buying the diaper', status: 'error' })
-      }
-   }
-});
-
+//Get diaper
 router.get('/:model', async function (req, res, next) {
    try {
       let result = await Diapers.find(req.params.model);
@@ -50,6 +36,7 @@ router.get('/:model', async function (req, res, next) {
    }
 });
 
+//Update diaper
 router.put('/', async function (req, res, next) {
    try {
       let obj = req.body;
@@ -63,6 +50,7 @@ router.put('/', async function (req, res, next) {
    }
 });
 
+//Get all diapers
 router.get('/', async function (req, res, next) {
    try {
       res.send(await Diapers.listVisible())
@@ -74,7 +62,23 @@ router.get('/', async function (req, res, next) {
    }
 });
 
-//Hide
+//Buy diaper
+router.post('/buy', async function (req, res, next) {
+   try {
+		let result = await Diapers.buy(req.body);
+		let predictions = await Sales.predictions();
+		predictions = predictions[result.id][req.body.size];
+
+      res.send({ message: 'Diaper bought', status: 'success', result, predictions })
+   } catch (error) {
+      if (!handleException(error, res)) {
+         res.status(500);
+         res.send({ message: 'Error buying the diaper', status: 'error' })
+      }
+   }
+});
+
+//Hide diaper
 router.delete('/:model', async function (req, res, next) {
    try {
       await Diapers.delete(req.params.model);
@@ -87,13 +91,29 @@ router.delete('/:model', async function (req, res, next) {
    }
 });
 
-
+//Test only methods
 router.get('/test/deleteAll', async function (req, res, next) {
-   res.send(await Diapers.deleteAll())
+	try {
+      await Diapers.deleteAll()
+      res.send({ message: 'Diapers deleted', status: 'success' });
+   } catch (error) {
+      if (!handleException(error, res)) {
+         res.status(500);
+         res.send({ message: error.message, status: 'error' });
+      }
+   }
 });
 
-router.get('/test/deleteBuys', async function (req, res, next) {
-   res.send(await Diapers.deleteBuys())
+router.get('/test/deleteSalesHistory', async function (req, res, next) {
+	try {
+      await Diapers.deleteSales()
+      res.send({ message: 'Sales deleted', status: 'success' });
+   } catch (error) {
+      if (!handleException(error, res)) {
+         res.status(500);
+         res.send({ message: error.message, status: 'error' });
+      }
+   }
 });
 
 function handleException(error, res) {

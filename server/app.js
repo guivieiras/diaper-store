@@ -8,6 +8,7 @@ var diapersController = require('./controllers/diapersController');
 var cors = require('cors')
 var app = express()
 
+// If running the front-end from node, uncomment line below
 app.use(cors({ origin: 'http://localhost:8080' }))
 
 app.use(logger('dev'));
