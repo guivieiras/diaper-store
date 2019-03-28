@@ -15,10 +15,17 @@ export default new Vuex.Store({
 		hideLoading({ state }) {
 			state.batata = false;
 		},
+		alert({state}, message, status){
+			Vue.prototype.$notify({
+				group: "foo",
+				text: message,
+				type: status,
+				duration: 10000
+			})
+		},
 		logResponse({state}, response){
 			Vue.prototype.$notify({
 				group: "foo",
-				title: "Success!",
 				text: response.data.message,
 				type: response.data.status
 			})

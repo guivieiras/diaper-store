@@ -5,7 +5,16 @@
 			<v-spacer></v-spacer>
 			<v-btn @click.stop="dialog = true" color="primary" dark class="mb-2">New diaper</v-btn>
 			<v-btn @click.stop="buyDialog = true" column color="primary" dark class="mb-2">Buy</v-btn>
-			<v-switch hide-details v-model="localValidation" label="Local Validation" class="mb-2 shrink"></v-switch>
+			<v-switch
+				hide-details
+				v-model="localValidation"
+				label="Local Validation"
+				class="mb-2 shrink mr-2"
+			></v-switch>
+			<v-radio-group v-model="predictionType" class="shrink" hide-details>
+				<v-radio label="Since first buy prediction" value="firstBuy"></v-radio>
+				<v-radio label="24Hour prediction" value="24h"></v-radio>
+			</v-radio-group>
 		</v-toolbar>
 		<v-data-table
 			:headers="headers"
@@ -149,6 +158,7 @@ export default {
 	name: "List",
 	data: () => ({
 		localValidation: true,
+		predictionType: "firstBuy",
 		apiUrl: process.env.VUE_APP_API_URL,
 		dialog: false,
 		loading: true,
@@ -236,6 +246,14 @@ export default {
 					size.quantity -= this.buy.quantity
 					size.sold += this.buy.quantity
 
+					var date1 = new Date(response.data.predictions.prediction24h).toLocaleString();
+					var date2 = new Date(response.data.predictions.sinceFirstBuyPrediction).toLocaleString()
+					if (this.predictionType == "24h") {
+						this.alert(`This item will sold out at ${date1}`)
+					} else if (response.data.predictions.sinceFirstBuyPrediction){
+						this.alert(`This item will sold out at ${date2}`)
+					}
+
 					diaper._id = response.data.result.id
 					diaper._rev = response.data.result.rev
 					this.closeBuy()
@@ -268,8 +286,7 @@ export default {
 		},
 		async deleteSize(item) {
 			const index = this.editedItem.sizes.indexOf(item)
-			confirm("Are you sure you want to delete this item?") &&
-				this.editedItem.sizes.splice(index, 1)
+			confirm("Are you sure you want to delete this item?") && this.editedItem.sizes.splice(index, 1)
 		},
 
 		async editItem(item) {
@@ -321,7 +338,7 @@ export default {
 				this.createLoading = false
 			}
 		},
-		...mapActions(["showLoading", "hideLoading", "logResponse"]),
+		...mapActions(["showLoading", "hideLoading", "logResponse", "alert"]),
 		async initialize() {
 			this.loading = true
 			let ab = await axios.get(`${this.apiUrl}/diapers`)
