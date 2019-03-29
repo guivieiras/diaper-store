@@ -1,6 +1,5 @@
 const nano = require('nano')(process.env.DB_URL);
 const Diapers = nano.db.use('diapers');
-const Sales = nano.db.use('sales');
 var { DuplicatedException, NotFoundException, BadRequestException } = require('../utils/exceptions')
 
 var cls = {};
@@ -61,7 +60,7 @@ cls.listVisible = async function () {
 
 cls.find = async function (model) {
 	var list = await cls.listVisible();
-	return list.find(o => o.model == model);
+	return list.find(o => o.model == model && !o.hidden);
 }
 
 cls.deleteAll = async function () {
@@ -98,19 +97,7 @@ cls.buy = async function (obj) {
 	}
 	size.quantity -= obj.quantity;
 	size.sold += obj.quantity;
-	let result = await cls.update(document)
-	
-	await Sales.insert({diaper: result.id, size: obj.size, timestamp: new Date().getTime(), quantity: obj.quantity})
-	return result;
+	return await cls.update(document)
 }
-
-cls.deleteBuys = async function () {
-	var list = await Sales.list({ include_docs: true })
-
-	for (doc of list.rows.map(o => o.doc)) {
-		Sales.destroy(doc._id, doc._rev);
-	}
-}
-
 
 module.exports = cls

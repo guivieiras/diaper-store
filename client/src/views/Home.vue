@@ -1,13 +1,22 @@
 <template>
-	<v-container>
+	<div>
 		<v-toolbar flat color="white">
 			<v-toolbar-title>Diapers list</v-toolbar-title>
-			<v-spacer></v-spacer>
-			<v-btn @click.stop="dialog = true" color="primary" dark class="mb-2">New diaper</v-btn>
-			<v-btn @click.stop="buyDialog = true" column color="primary" dark class="mb-2">Buy</v-btn>
-			<v-btn @click.stop="deleteDiapers" column color="primary" dark class="mb-2">Delete diapers</v-btn>
-			<v-btn @click.stop="deleteSaleHistory" column color="primary" dark class="mb-2">Delete sales history</v-btn>
-			<v-btn @click.stop="repopulate" column color="primary" dark class="mb-2">Repopulate</v-btn>
+		</v-toolbar>
+		<v-toolbar flat color="white">
+			<v-layout justify-space-between row>
+				<v-btn @click.stop="dialog = true" color="primary" dark class="mb-2">New diaper</v-btn>
+				<v-btn @click.stop="buyDialog = true" column color="primary" dark class="mb-2">Buy</v-btn>
+				<v-btn @click.stop="deleteDiapers" column color="error" dark class="mb-2">Delete diapers</v-btn>
+				<v-btn
+					@click.stop="deleteSaleHistory"
+					column
+					color="error"
+					dark
+					class="mb-2"
+				>Delete sales history</v-btn>
+				<v-btn @click.stop="createDbs" column color="success" dark class="mb-2">Create dbs</v-btn>
+			</v-layout>
 		</v-toolbar>
 		<v-toolbar flat color="white">
 			<v-switch
@@ -15,7 +24,8 @@
 				v-model="localValidation"
 				label="Local Validation"
 				class="mb-2 shrink mr-4"
-			></v-switch>			<v-spacer></v-spacer>
+			></v-switch>
+			<v-spacer></v-spacer>
 
 			<v-radio-group row v-model="predictionType" class="shrink" hide-details>
 				<v-radio label="Since first buy prediction" value="firstBuy"></v-radio>
@@ -153,7 +163,7 @@
 				</v-card-actions>
 			</v-card>
 		</v-dialog>
-	</v-container>
+	</div>
 </template>
 
 <script>

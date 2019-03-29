@@ -1,12 +1,5 @@
 <template>
-	<!-- <v-app>
-	  <v-content>
-	  <notifications group="foo" />
-
-			<Home></Home>
-	 </v-content>
-	</v-app>-->
-	<v-app id="inspire">
+	<v-app>
 		<v-toolbar color="blue darken-4" dark app fixed>
 			<v-btn icon large>
 				<v-avatar size="32px" tile>
@@ -18,10 +11,8 @@
 			</v-toolbar-title>
 		</v-toolbar>
 		<v-content>
-			<v-container>
-				<v-layout>
-					<Home></Home>
-				</v-layout>
+			<v-container >
+				<Home></Home>
 			</v-container>
 		</v-content>
 	</v-app>
@@ -38,18 +29,8 @@ export default {
 }
 </script>
 
-<style>
-#loading {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	background: #00000060;
-	z-index: 100;
-}
-
-#ld {
-	margin: auto;
-	width: 100% !important;
-	margin-top: 200px;
-}
+<style scoped>
+	.v-content{
+		background: white
+	}
 </style>

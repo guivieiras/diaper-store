@@ -3,8 +3,6 @@ const Sales = nano.db.use('sales');
 var Diapers = require('../db/diapers');
 var _ = require('lodash');
 
-var { DuplicatedException, NotFoundException, BadRequestException } = require('../utils/exceptions')
-
 var cls = {};
 
 cls.listAll = async function () {
@@ -13,11 +11,11 @@ cls.listAll = async function () {
 }
 
 cls.predictions = async function () {
-	let result = await cls.listAll();
+	let allSales = await cls.listAll();
 
-	let diapers = _.groupBy(result, 'diaper');
+	let diapers = _.groupBy(allSales, 'diaper');
 
-	result = {}
+	var result = {}
 
 	var allDiapers = await Diapers.listAll();
 
@@ -37,15 +35,12 @@ cls.predictions = async function () {
 			var sales = salesAfterBegin.reduce((a, b) => a + b.quantity, 0);
 
 			var microSecondsDiff = Math.abs(now.getTime() - begin.getTime());
-			var seconds = microSecondsDiff / (1000);
 			var minutes = microSecondsDiff / (1000 * 60);
-			var hours = microSecondsDiff / (1000 * 60 * 60);
-			var days = microSecondsDiff / (1000 * 60 * 60 * 24);
 
 			var size = diaper.sizes.find(o => o.size == sizeName);
 
-			var myTimeSpan = size.quantity / (sales / minutes) * 60 * 1000; // 5 minutes in milliseconds
-			now.setTime(now.getTime() + myTimeSpan);
+			var timeSpan = size.quantity / (sales / minutes) * 60 * 1000;
+			now.setTime(now.getTime() + timeSpan);
 
 			if (!result[diaperId][sizeName]) {
 				result[diaperId][sizeName] = {}
@@ -68,15 +63,12 @@ cls.predictions = async function () {
 			var sales = sortedSizes.reduce((a, b) => a + b.quantity, 0);
 
 			var microSecondsDiff = Math.abs(now.getTime() - begin.getTime());
-			var seconds = microSecondsDiff / (1000);
 			var minutes = microSecondsDiff / (1000 * 60);
-			var hours = microSecondsDiff / (1000 * 60 * 60);
-			var days = microSecondsDiff / (1000 * 60 * 60 * 24);
 
 			var size = diaper.sizes.find(o => o.size == sizeName);
 
-			var myTimeSpan = size.quantity / (sales / minutes) * 60 * 1000; // 5 minutes in milliseconds
-			now.setTime(now.getTime() + myTimeSpan);
+			var timeSpan = size.quantity / (sales / minutes) * 60 * 1000;
+			now.setTime(now.getTime() + timeSpan);
 
 			if (!result[diaperId][sizeName]) {
 				result[diaperId][sizeName] = {}
@@ -89,5 +81,12 @@ cls.predictions = async function () {
 	return result;
 }
 
+cls.deleteSaleHistory = async function(){
+	var list = await cls.list({ include_docs: true })
+
+	for (doc of list.rows.map(o => o.doc)) {
+		Sales.destroy(doc._id, doc._rev);
+	}
+}
 
 module.exports = cls
