@@ -89,8 +89,8 @@ cls.delete = async function (model) {
 cls.buy = async function (obj) {
 	let document = await cls.find(obj.model)
 	let size = document.sizes.find(o => o.size == obj.size)
-	if (obj.quantity < 0){
-		throw new BadRequestException("Quantity can't be negative")
+	if (obj.quantity <= 0){
+		throw new BadRequestException("Quantity can't be negative or 0")
 	}
 	if (size.quantity - obj.quantity < 0){
 		throw new BadRequestException("Sold out")

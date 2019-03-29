@@ -23,13 +23,11 @@ cls.predictions = async function (model, sizeName) {
 
 	var sizes = _.groupBy(diapers[diaperId], 'size');
 
-	result[diaperId] = { model: diaper.model }
-
 	{
 		var now = new Date();
 
 		var begin = new Date();
-		begin.setHours(now.getHours() - 48);
+		begin.setHours(now.getHours() - 12);
 
 		var salesAfterBegin = sizes[sizeName].filter(x => new Date(x.timestamp) > begin)
 		var sales = salesAfterBegin.reduce((a, b) => a + b.quantity, 0);
@@ -41,12 +39,10 @@ cls.predictions = async function (model, sizeName) {
 
 		if (size) {
 			var timeSpan = size.quantity / (sales / minutes) * 60 * 1000;
-			now.setTime(now.getTime() + timeSpan);
+			var prediction = new Date();
+			prediction.setTime(now.getTime() + timeSpan);
 
-			if (!result[diaperId][sizeName]) {
-				result[diaperId][sizeName] = {}
-			}
-			result[diaperId][sizeName].prediction24h = now;
+			result.prediction24h = calculateTimeSinceNow(prediction);
 		}
 	}
 
@@ -64,18 +60,55 @@ cls.predictions = async function (model, sizeName) {
 
 		if (size) {
 			var timeSpan = size.quantity / (sales / minutes) * 60 * 1000;
-			now.setTime(now.getTime() + timeSpan);
+			var prediction = new Date();
+			prediction.setTime(now.getTime() + timeSpan);
 
-			if (!result[diaperId][sizeName]) {
-				result[diaperId][sizeName] = {}
-			}
 			if (sortedSizes.length > 1) {
-				result[diaperId][sizeName].sinceFirstBuyPrediction = now;
+				result.sinceFirstBuyPrediction = calculateTimeSinceNow(prediction);
 			}
 		}
 
 	}
 	return result;
+}
+
+function calculateTimeSinceNow(dateFuture) {
+	var dateNow = new Date();
+
+	if (!dateFuture || dateFuture <= dateNow)
+		return 'Sold out!';
+
+	var seconds = Math.floor((dateFuture - (dateNow)) / 1000);
+	var minutes = Math.floor(seconds / 60);
+	var hours = Math.floor(minutes / 60);
+	var days = Math.floor(hours / 24);
+
+	hours = hours - (days * 24);
+	minutes = minutes - (days * 24 * 60) - (hours * 60);
+	seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+
+	var x = []
+	if (days > 0) {
+		x.push(`${days} day` + (days > 1 ? 's' : ''))
+	}
+	if (hours > 0) {
+		x.push(`${hours} hour` + (hours > 1 ? 's' : ''))
+	}
+	if (minutes > 0 && !days) {
+		x.push(`${minutes} minute` + (minutes > 1 ? 's' : ''))
+	}
+	if (seconds > 0 && !days && !hours) {
+		x.push(`${seconds} second` + (seconds > 1 ? 's' : ''))
+	}
+
+	x = x.reduce((acc, cur, indx, arr) => {
+		if (indx == arr.length - 1)
+			return acc + ' and ' + cur;
+		if (indx == arr.length - 2)
+			return acc + ', ' + cur;
+	});
+
+	return `This item will sold out in ${x}.`
 }
 
 cls.insert = Sales.insert;

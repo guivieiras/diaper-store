@@ -6,8 +6,8 @@
 		<v-toolbar flat color="white">
 			<v-layout justify-space-between row>
 				<v-btn @click.stop="dialog = true" color="primary" dark class="mb-2">New diaper</v-btn>
-				<v-btn @click.stop="buyDialog = true" column color="primary" dark class="mb-2">Buy</v-btn>
-				<v-btn @click.stop="deleteDiapers" column color="error" dark class="mb-2">Delete diapers</v-btn>
+				<v-btn @click.stop="buyDialog = true" :disabled="diapers.lenght == 0" column color="primary" dark class="mb-2">Buy</v-btn>
+				<v-btn @click.stop="deleteDiapers" :disabled="true" column color="error" dark class="mb-2">Delete diapers</v-btn>
 				<v-btn
 					@click.stop="deleteSaleHistory"
 					column
@@ -15,7 +15,7 @@
 					dark
 					class="mb-2"
 				>Delete sales history</v-btn>
-				<v-btn @click.stop="createDbs" column color="success" dark class="mb-2">Create dbs</v-btn>
+				<v-btn @click.stop="createDbs" :disabled="diapers.lenght > 0" column color="success" dark class="mb-2">Create dbs</v-btn>
 			</v-layout>
 		</v-toolbar>
 		<v-toolbar flat color="white">
@@ -29,7 +29,7 @@
 
 			<v-radio-group row v-model="predictionType" class="shrink" hide-details>
 				<v-radio label="Since first buy prediction" value="firstBuy"></v-radio>
-				<v-radio label="24Hour prediction" value="24h"></v-radio>
+				<v-radio label="24h prediction" value="24h"></v-radio>
 			</v-radio-group>
 		</v-toolbar>
 		<v-data-table
@@ -148,7 +148,7 @@
 							<v-text-field
 								v-model="buy.quantity"
 								:disabled="!buy.size"
-								:rules="[ v => !!v || 'Insert a valid value ', v => v <= maxBuyQuantity() || 'Quantity exceeds store count']"
+								:rules="[ v => !!v && v > 0 || 'Insert a valid value ', v => v <= maxBuyQuantity() || 'Quantity exceeds store count']"
 								:suffix="'/' + maxBuyQuantity()"
 								label="Quantity"
 							></v-text-field>
@@ -264,12 +264,10 @@ export default {
 					size.quantity -= this.buy.quantity
 					size.sold += this.buy.quantity
 
-					var date1 = new Date(response.data.predictions.prediction24h).toLocaleString()
-					var date2 = new Date(response.data.predictions.sinceFirstBuyPrediction).toLocaleString()
 					if (this.predictionType == "24h") {
-						this.alert(`This item will sold out at ${date1}`)
+						this.alert(response.data.predictions.prediction24h)
 					} else if (response.data.predictions.sinceFirstBuyPrediction) {
-						this.alert(`This item will sold out at ${date2}`)
+						this.alert(response.data.predictions.sinceFirstBuyPrediction)
 					}
 
 					diaper._id = response.data.result.id
@@ -391,56 +389,56 @@ export default {
 			let diapers = [
 				{
 					model: "Pampers",
-					description: 159,
+					description: 'Soft and cheap diapers',
 					sizes: [
-						{ size: "P", quantity: 6, sold: 10 },
+						{ size: "S", quantity: 6, sold: 10 },
 						{ size: "M", quantity: 6, sold: 10 },
-						{ size: "G", quantity: 6, sold: 10 }
+						{ size: "B", quantity: 6, sold: 10 }
 					]
 				},
 				{
 					model: "Jhonsons baby",
-					description: 159,
+					description: 'More confort to your baby!',
 					sizes: [
-						{ size: "P", quantity: 6, sold: 10 },
+						{ size: "S", quantity: 6, sold: 10 },
 						{ size: "M", quantity: 6, sold: 10 },
-						{ size: "G", quantity: 6, sold: 10 }
+						{ size: "B", quantity: 6, sold: 10 }
 					]
 				},
 				{
 					model: "Anjinho",
-					description: 159,
+					description: 'Description',
 					sizes: [
-						{ size: "P", quantity: 6, sold: 10 },
+						{ size: "S", quantity: 6, sold: 10 },
 						{ size: "M", quantity: 6, sold: 10 },
-						{ size: "G", quantity: 6, sold: 10 }
+						{ size: "B", quantity: 6, sold: 10 }
 					]
 				},
 				{
 					model: "Turma da monica",
-					description: 159,
+					description: "I'm out of creativity",
 					sizes: [
-						{ size: "P", quantity: 6, sold: 10 },
+						{ size: "S", quantity: 6, sold: 10 },
 						{ size: "M", quantity: 6, sold: 10 },
-						{ size: "G", quantity: 6, sold: 10 }
+						{ size: "B", quantity: 6, sold: 10 }
 					]
 				},
 				{
 					model: "Huggies",
-					description: 159,
+					description: 'Description',
 					sizes: [
-						{ size: "P", quantity: 6, sold: 10 },
+						{ size: "S", quantity: 6, sold: 10 },
 						{ size: "M", quantity: 6, sold: 10 },
-						{ size: "G", quantity: 6, sold: 10 }
+						{ size: "B", quantity: 6, sold: 10 }
 					]
 				},
 				{
 					model: "Cremer",
-					description: 159,
+					description: "Best diapers in the world",
 					sizes: [
-						{ size: "P", quantity: 6, sold: 10 },
+						{ size: "S", quantity: 6, sold: 10 },
 						{ size: "M", quantity: 6, sold: 10 },
-						{ size: "G", quantity: 6, sold: 10 }
+						{ size: "B", quantity: 6, sold: 10 }
 					]
 				}
 			]
