@@ -9,8 +9,8 @@
 
 * Run _npm run build_ at _/client_, it will create the  _/client/dist_ folder
 * Copy nginx.conf file to your nginx config folder and overwrite the file inside
-* Change the root folder to the full path of _/client/dist_
-* Run _npm run start_ at _/server_
+* Change the root folder at line #20 to the full path of /client/dist
+* Run npm run start at /server
 * Open http://localhost
 
 ##### If not using NGINX:

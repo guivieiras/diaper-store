@@ -1,5 +1,6 @@
 <template>
 	<v-app>
+		<notifications group="foo"/>
 		<v-toolbar color="blue darken-4" dark app fixed>
 			<v-btn icon large>
 				<v-avatar size="32px" tile>

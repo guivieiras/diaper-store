@@ -46,3 +46,5 @@ router.get('/deleteSaleHistory', async function (req, res, next) {
       }
    }
 });
+
+module.exports = router;

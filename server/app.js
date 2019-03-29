@@ -4,12 +4,13 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var diapersController = require('./controllers/diapersController');
+var testController = require('./controllers/testController');
 
 var cors = require('cors')
 var app = express()
 
 // If running the front-end from node, uncomment line below
-app.use(cors({ origin: 'http://localhost:8080' }))
+// app.use(cors({ origin: 'http://localhost:8080' }))
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/diapers', diapersController);
+app.use('/test', testController);
 
 
 module.exports = app;
