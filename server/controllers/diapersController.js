@@ -69,7 +69,7 @@ router.post('/buy', async function (req, res, next) {
 		
 		await Sales.insert({diaper: result.id, size: req.body.size, timestamp: new Date().getTime(), quantity: req.body.quantity})
 		
-		let predictions = await Sales.predictions();
+		let predictions = await Sales.predictions(req.body.model, req.body.size);
 		predictions = predictions[result.id][req.body.size];
 
       res.send({ message: 'Diaper bought', status: 'success', result, predictions })

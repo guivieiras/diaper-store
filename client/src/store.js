@@ -5,16 +5,9 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
 	state: {
-		batata: true
 	},
 	mutations: {},
 	actions: {
-		showLoading({ state }) {
-			state.batata = true;
-		},
-		hideLoading({ state }) {
-			state.batata = false;
-		},
 		alert({state}, message, status){
 			Vue.prototype.$notify({
 				group: "foo",

@@ -247,6 +247,8 @@ export default {
 					size: this.tempSize,
 					quantity: this.tempQuantity
 				})
+				this.tempSize = null
+				this.tempQuantity = null
 			}
 		},
 		async buyDiaper() {
@@ -283,7 +285,8 @@ export default {
 		async closeBuy() {
 			this.buyDialog = false
 			setTimeout(() => {
-				// this.buy = {}
+				this.buy = {}
+				this.$refs.buyForm.reset()
 			}, 300)
 		},
 		models() {
@@ -327,6 +330,7 @@ export default {
 			setTimeout(() => {
 				this.editedItem = Object.assign({}, this.defaultItem)
 				this.editedIndex = -1
+				this.$refs.diaperForm.reset()
 			}, 300)
 		},
 
@@ -354,13 +358,37 @@ export default {
 				this.createLoading = false
 			}
 		},
+
+		async deleteDiapers() {
+			try {
+				let response = await axios.get(`${this.apiUrl}/test/deleteDiapers`)
+				this.logResponse(response)
+				this.diapers = []
+			} catch (error) {
+				this.logResponse(error.response)
+			}
+		},
+		async deleteSaleHistory() {
+			try {
+				let response = await axios.get(`${this.apiUrl}/test/deleteSaleHistory`)
+				this.logResponse(response)
+			} catch (error) {
+				this.logResponse(error.response)
+			}
+		},
+
 		...mapActions(["showLoading", "hideLoading", "logResponse", "alert"]),
 		async initialize() {
 			this.loading = true
 			let ab = await axios.get(`${this.apiUrl}/diapers`)
 			this.diapers = ab.data
 
-			let a = [
+			this.loading = false
+		},
+		async createDbs() {
+			let response = await axios.get(`${this.apiUrl}/test/createDatabases`)
+
+			let diapers = [
 				{
 					model: "Pampers",
 					description: 159,
@@ -416,14 +444,14 @@ export default {
 					]
 				}
 			]
+			this.loading = true
 
-			if (!ab.data || (ab.data && ab.data.length == 0)) {
-				for (let batata of a) {
-					await axios.post(`${this.apiUrl}/diapers`, batata)
-				}
-				let ab = await axios.get(`${this.apiUrl}/diapers`)
-				this.diapers = ab.data
+			for (let doc of diapers) {
+				await axios.post(`${this.apiUrl}/diapers`, doc)
 			}
+			let ab = await axios.get(`${this.apiUrl}/diapers`)
+			this.diapers = ab.data
+
 			this.loading = false
 		}
 	}

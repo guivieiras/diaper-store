@@ -25,8 +25,6 @@ export default {
 	components: {
 		Home
 	},
-	computed: mapState(["batata"]),
-	methods: mapActions(["hideLoading"])
 }
 </script>
 

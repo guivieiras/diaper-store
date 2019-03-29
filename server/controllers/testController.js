@@ -9,8 +9,18 @@ var exceptionHandler = require('../utils/exceptionHandler')
 // Create databases
 router.get('/createDatabases', async function (req, res, next) {
 	try {
-		await nano.db.create('sales')
-		await nano.db.create('diapers');
+		try{
+			await nano.db.get('sales');
+		}catch(error){
+			await nano.db.create('sales')
+
+		}
+		try{
+			await nano.db.get('diapers');
+		}catch(error){
+			await nano.db.create('diapers')
+
+		}
 
       res.send({ message: 'Databases created', status: 'success' });
    } catch (error) {
@@ -22,7 +32,7 @@ router.get('/createDatabases', async function (req, res, next) {
 });
 
 //Delete all diapers
-router.get('/deleteAll', async function (req, res, next) {
+router.get('/deleteDiapers', async function (req, res, next) {
 	try {
       await Diapers.deleteAll()
       res.send({ message: 'Diapers deleted', status: 'success' });

@@ -10,35 +10,36 @@ cls.listAll = async function () {
 	return list.rows.map(o => o.doc);
 }
 
-cls.predictions = async function () {
+cls.predictions = async function (model, sizeName) {
 	let allSales = await cls.listAll();
 
 	let diapers = _.groupBy(allSales, 'diaper');
 
 	var result = {}
 
-	var allDiapers = await Diapers.listAll();
+	var diaper = await Diapers.find(model);
 
-	for (var diaperId in diapers) {
-		let diaper = allDiapers.find(o => o._id == diaperId);
+	var diaperId = diaper._id;
 
-		var sizes = _.groupBy(diapers[diaperId], 'size');
-		result[diaperId] = { model: diaper.model }
+	var sizes = _.groupBy(diapers[diaperId], 'size');
 
-		for (var sizeName in sizes) {
-			var now = new Date();
+	result[diaperId] = { model: diaper.model }
 
-			var begin = new Date();
-			begin.setHours(now.getHours() - 48);
+	{
+		var now = new Date();
 
-			var salesAfterBegin = sizes[sizeName].filter(x => new Date(x.timestamp) > begin)
-			var sales = salesAfterBegin.reduce((a, b) => a + b.quantity, 0);
+		var begin = new Date();
+		begin.setHours(now.getHours() - 48);
 
-			var microSecondsDiff = Math.abs(now.getTime() - begin.getTime());
-			var minutes = microSecondsDiff / (1000 * 60);
+		var salesAfterBegin = sizes[sizeName].filter(x => new Date(x.timestamp) > begin)
+		var sales = salesAfterBegin.reduce((a, b) => a + b.quantity, 0);
 
-			var size = diaper.sizes.find(o => o.size == sizeName);
+		var microSecondsDiff = Math.abs(now.getTime() - begin.getTime());
+		var minutes = microSecondsDiff / (1000 * 60);
 
+		var size = diaper.sizes.find(o => o.size == sizeName);
+
+		if (size) {
 			var timeSpan = size.quantity / (sales / minutes) * 60 * 1000;
 			now.setTime(now.getTime() + timeSpan);
 
@@ -49,44 +50,40 @@ cls.predictions = async function () {
 		}
 	}
 
-	for (var diaperId in diapers) {
-		let diaper = allDiapers.find(o => o._id == diaperId);
+	{			//ascending
+		var sortedSizes = sizes[sizeName].sort((a, b) => a.timestamp - b.timestamp);
+		var now = new Date();
+		var begin = new Date(sortedSizes[0].timestamp);
 
-		var sizes = _.groupBy(diapers[diaperId], 'size');
-		for (var sizeName in sizes) {
+		var sales = sortedSizes.reduce((a, b) => a + b.quantity, 0);
 
-			//ascending
-			var sortedSizes = sizes[sizeName].sort((a, b) => a.timestamp - b.timestamp);
-			var now = new Date();
-			var begin = new Date(sortedSizes[0].timestamp);
+		var microSecondsDiff = Math.abs(now.getTime() - begin.getTime());
+		var minutes = microSecondsDiff / (1000 * 60);
 
-			var sales = sortedSizes.reduce((a, b) => a + b.quantity, 0);
+		var size = diaper.sizes.find(o => o.size == sizeName);
 
-			var microSecondsDiff = Math.abs(now.getTime() - begin.getTime());
-			var minutes = microSecondsDiff / (1000 * 60);
-
-			var size = diaper.sizes.find(o => o.size == sizeName);
-
+		if (size) {
 			var timeSpan = size.quantity / (sales / minutes) * 60 * 1000;
 			now.setTime(now.getTime() + timeSpan);
 
 			if (!result[diaperId][sizeName]) {
 				result[diaperId][sizeName] = {}
 			}
-			if (sortedSizes.length > 1){
+			if (sortedSizes.length > 1) {
 				result[diaperId][sizeName].sinceFirstBuyPrediction = now;
 			}
 		}
+
 	}
 	return result;
 }
 
 cls.insert = Sales.insert;
 
-cls.deleteSaleHistory = async function(){
-	var list = await cls.list({ include_docs: true })
+cls.deleteSaleHistory = async function () {
+	var list = await cls.listAll()
 
-	for (doc of list.rows.map(o => o.doc)) {
+	for (doc of list) {
 		Sales.destroy(doc._id, doc._rev);
 	}
 }
