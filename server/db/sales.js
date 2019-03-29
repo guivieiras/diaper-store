@@ -81,6 +81,8 @@ cls.predictions = async function () {
 	return result;
 }
 
+cls.insert = Sales.insert;
+
 cls.deleteSaleHistory = async function(){
 	var list = await cls.list({ include_docs: true })
 

@@ -1,3 +1,4 @@
+var { CustomException } = require('./exceptions');
 module.exports = function (error, res){
 	console.log(error)
 
