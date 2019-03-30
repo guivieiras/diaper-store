@@ -46,7 +46,8 @@ cls.predictions = async function (model, sizeName) {
 		}
 	}
 
-	{			//ascending
+	{		
+		//ascending
 		var sortedSizes = sizes[sizeName].sort((a, b) => a.timestamp - b.timestamp);
 		var now = new Date();
 		var begin = new Date(sortedSizes[0].timestamp);

@@ -5,17 +5,16 @@
 		</v-toolbar>
 		<v-toolbar flat color="white">
 			<v-layout justify-space-between row>
-				<v-btn @click.stop="dialog = true" color="primary" dark class="mb-2">New diaper</v-btn>
-				<v-btn @click.stop="buyDialog = true" :disabled="diapers.lenght == 0" column color="primary" dark class="mb-2">Buy</v-btn>
-				<v-btn @click.stop="deleteDiapers" :disabled="true" column color="error" dark class="mb-2">Delete diapers</v-btn>
+				<v-btn @click.stop="dialog = true" color="primary" class="mb-2">New diaper</v-btn>
+				<v-btn @click.stop="buyDialog = true" :disabled="diapers.length == 0" column color="primary" class="mb-2">Buy</v-btn>
+				<v-btn @click.stop="deleteDiapers" :disabled="diapers.length == 0" column color="error" class="mb-2">Delete diapers</v-btn>
 				<v-btn
 					@click.stop="deleteSaleHistory"
 					column
 					color="error"
-					dark
 					class="mb-2"
 				>Delete sales history</v-btn>
-				<v-btn @click.stop="createDbs" :disabled="diapers.lenght > 0" column color="success" dark class="mb-2">Create dbs</v-btn>
+				<v-btn @click.stop="createDbs" :disabled="diapers.length > 0" column color="success" class="mb-2">Create dbs</v-btn>
 			</v-layout>
 		</v-toolbar>
 		<v-toolbar flat color="white">
@@ -207,7 +206,7 @@ export default {
 	}),
 	computed: {
 		formTitle() {
-			return this.editedIndex === -1 ? "New Item" : "Edit Item"
+			return this.editedIndex === -1 ? "New Diaper" : "Edit Diaper"
 		}
 	},
 

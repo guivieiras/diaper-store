@@ -17,10 +17,26 @@ export default new Vuex.Store({
 			})
 		},
 		logResponse({state}, response){
+			var title;
+			switch (response.data.status){
+				case 'success':
+					title = 'Success!'
+					break;
+				case 'warn':
+					title = 'Warning!'
+					break;
+				case 'error':
+					title = 'Error!'
+					break;
+				default:
+					title = 'Info';
+					break;
+			}
 			Vue.prototype.$notify({
 				group: "foo",
 				text: response.data.message,
-				type: response.data.status
+				type: response.data.status,
+				title
 			})
 		},
 		exceptionHandler({ state, dispatch }, { error }) {

@@ -28,8 +28,14 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 	.v-content{
 		background: white
+	}
+	.notification-content{
+		font-size: 1.1rem !important;
+	}
+	.notification-title{
+		font-size: 1.1rem !important;
 	}
 </style>
