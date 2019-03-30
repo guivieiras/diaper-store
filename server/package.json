@@ -1,0 +1,20 @@
+{
+  "name": "feracode-challenge",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+	 "start": "nodemon ./bin/www",
+	 "debug": "nodemon --inspect ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^7.0.0",
+    "express": "~4.16.0",
+    "lodash": "^4.17.11",
+    "morgan": "~1.9.0",
+    "nano": "^8.0.1",
+    "nodemon": "^1.18.10"
+  }
+}
